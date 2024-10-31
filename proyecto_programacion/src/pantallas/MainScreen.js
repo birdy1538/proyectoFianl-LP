@@ -3,15 +3,6 @@ import { Box } from '@mui/material';
 import Card from '../components/Card';
 import postsData from '../mocks/posts.json';
 
-// Lista de URLs de imágenes aleatorias de comida
-const randomImages = [
-  'https://picsum.photos/600/400?random=1',
-  'https://picsum.photos/600/400?random=2',
-  'https://picsum.photos/600/400?random=3',
-  'https://picsum.photos/600/400?random=4',
-  'https://picsum.photos/600/400?random=5',
-];
-
 const MainScreen = () => {
   const [posts, setPosts] = useState([]);
 
@@ -25,7 +16,7 @@ const MainScreen = () => {
   };
 
   const getRandomImage = () => {
-    return randomImages[Math.floor(Math.random() * randomImages.length)];
+    return `https://picsum.photos/600/400?random=${Math.floor(Math.random() * postsData.length) + 1}`;
   };
 
   return (
