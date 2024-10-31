@@ -3,11 +3,10 @@ import { Box } from '@mui/material';
 
 const CardBackground = ({ image, size }) => {
   const gradientPercentage = size === 'large' ? '40%' : size === 'medium' ? '30%' : '100%';
-  const transparencyLevel = size !== 'small' ? 'blur(8px)' : 'blur(1px)'
+  const transparencyLevel = size !== 'small' ? 'blur(8px)' : 'blur(1px)';
 
   return (
     <>
-      {/* Blurred Image Background */}
       {image && (
         <Box
           component="img"
@@ -27,7 +26,6 @@ const CardBackground = ({ image, size }) => {
         />
       )}
 
-      {/* Gradient Overlay */}
       <Box
         style={{
           position: 'absolute',

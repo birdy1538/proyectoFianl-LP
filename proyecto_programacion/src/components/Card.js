@@ -1,7 +1,7 @@
 // src/components/Card.js
 import React from 'react';
 import { Paper, Typography, Box } from '@mui/material';
-import CardBackground from './CardBackground'; // Import the new background component
+import CardBackground from './CardBackground'; 
 import { useNavigate } from 'react-router-dom';
 
 const Card = ({ title, content, size, image, id }) => {
@@ -19,7 +19,7 @@ const Card = ({ title, content, size, image, id }) => {
   };
 
   const handleClick = () => {
-    navigate(`/receta/${id}`); // Navigate to the recipe detail page
+    navigate(`/receta/${id}`); // Navegar a la página de detalles de la receta
   };
 
   return (
@@ -28,30 +28,27 @@ const Card = ({ title, content, size, image, id }) => {
       style={{
         ...getCardStyle(),
         margin: '8px auto',
-        borderRadius: '16px', // Rounded corners
+        borderRadius: '16px',
         overflow: 'hidden',
         position: 'relative',
         color: '#fff',
       }}
-      onClick={handleClick} // Add click event
+      onClick={handleClick} // Agregar evento de clic
     >
-      {/* Pass the size prop to the CardBackground component */}
       <CardBackground image={image} size={size} />
 
-      {/* Content */}
       <Box
         style={{
           position: 'relative',
           zIndex: 2,
           padding: '16px',
-          backdropFilter: 'blur(3px)', // Slight blur for a glossy look on content
-          height: '100%', // Content occupies the full height of the card
+          backdropFilter: 'blur(3px)', // Ligera difuminación para un aspecto brillante en el contenido
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between', // Space between to push content to bottom
+          justifyContent: 'space-between',
         }}
       >
-        {/* Display Image Inside Content */}
         {size === 'large' && image && (
           <Box
             component="img"
@@ -72,7 +69,7 @@ const Card = ({ title, content, size, image, id }) => {
             src={image}
             alt={`${title} image`}
             style={{
-              width: '75%', // 25% smaller than the original width
+              width: '75%', 
               height: 'auto',
               borderRadius: '8px',
               margin: '8px 0',
@@ -80,11 +77,10 @@ const Card = ({ title, content, size, image, id }) => {
           />
         )}
 
-        {/* Box for title and content */}
         <Box
           style={{
             marginTop: 'auto',
-            paddingBottom: '10%', // Add padding to the bottom
+            paddingBottom: '10%',
           }}
         >
           <Typography variant="h6" component="h2" style={{ color: size !== 'small' ? 'black' : 'white' }}>

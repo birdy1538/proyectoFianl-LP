@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import Card from '../components/Card';
 import postsData from '../mocks/posts.json';
 
-// List of random food image URLs
+// Lista de URLs de imágenes aleatorias de comida
 const randomImages = [
   'https://picsum.photos/600/400?random=1',
   'https://picsum.photos/600/400?random=2',
