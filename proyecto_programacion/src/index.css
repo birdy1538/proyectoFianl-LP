@@ -9,7 +9,7 @@ body {
   display: flex; /* Para centrar el contenido */
   align-items: center; /* Alinea verticalmente */
   justify-content: center; /* Alinea horizontalmente */
-  background-color: #e0e0e0; /* Color de fondo gris */
+  background-color: #1f1f1f; /* Color de fondo gris */
 }
 
 code {

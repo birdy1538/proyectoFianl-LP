@@ -1,7 +1,6 @@
-// src/components/Card.js
 import React from 'react';
 import { Paper, Typography, Box } from '@mui/material';
-import CardBackground from './CardBackground'; 
+import CardBackground from './CardBackground';
 import { useNavigate } from 'react-router-dom';
 
 const Card = ({ title, content, size, image, id }) => {
@@ -27,69 +26,86 @@ const Card = ({ title, content, size, image, id }) => {
       elevation={3}
       style={{
         ...getCardStyle(),
-        margin: '8px auto',
+        margin: '16px auto',
         borderRadius: '16px',
         overflow: 'hidden',
         position: 'relative',
-        color: '#fff',
+        color: '#c48304',
       }}
-      onClick={handleClick} // Agregar evento de clic
+      onClick={handleClick} // Agregar evento de click
     >
+      {/* Usar CardBackground para la imagen de fondo */}
       <CardBackground image={image} size={size} />
 
-      <Box
-        style={{
-          position: 'relative',
-          zIndex: 2,
-          padding: '16px',
-          backdropFilter: 'blur(3px)', // Ligera difuminación para un aspecto brillante en el contenido
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-        }}
-      >
-        {size === 'large' && image && (
+      {/* Ajustar la imagen para que ocupe todo el ancho en tamaños large y medium */}
+      {['large', 'medium'].includes(size) && image && (
+        <Box
+          style={{
+            width: '100%',
+            height: size === 'large' ? '75%' : '55%', // Ajustar la altura de la imagen según el tamaño
+            position: 'absolute',
+            top: 0,
+            zIndex: 1,
+            overflow: 'hidden',
+          }}
+        >
           <Box
             component="img"
             src={image}
             alt={`${title} image`}
             style={{
               width: '100%',
-              height: 'auto',
-              borderRadius: '8px',
-              margin: '8px 0',
+              height: '100%',
+              objectFit: 'cover',
             }}
           />
-        )}
-
-        {size === 'medium' && image && (
+          {/* Capa de degradado para difuminar la parte inferior */}
           <Box
-            component="img"
-            src={image}
-            alt={`${title} image`}
             style={{
-              width: '75%', 
-              height: 'auto',
-              borderRadius: '8px',
-              margin: '8px 0',
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              width: '100%',
+              height: '30%', // Ajustar la altura del degradado
             }}
           />
-        )}
+        </Box>
+      )}
 
-        <Box
+      <Box
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          padding: '0px 16px',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+        }}
+      >
+        <Typography
+          variant="h5"
+          component="h2"
           style={{
-            marginTop: 'auto',
-            paddingBottom: '10%',
+            color: 'white',
+            fontFamily: 'Roboto, sans-serif',
+            fontWeight: 700,
+            marginTop: '2px',
           }}
         >
-          <Typography variant="h6" component="h2" style={{ color: size !== 'small' ? 'black' : 'white' }}>
-            {title}
-          </Typography>
-          <Typography variant="body1" style={{ color: size !== 'small' ? 'black' : 'white' }}>
-            {content}
-          </Typography>
-        </Box>
+          {title}
+        </Typography>
+        <Typography
+          variant="body1"
+          style={{
+            color: 'white',
+            fontFamily: 'Roboto, sans-serif',
+            fontWeight: 400,
+            marginTop: '1px',
+          }}
+        >
+          {content}
+        </Typography>
       </Box>
     </Paper>
   );
