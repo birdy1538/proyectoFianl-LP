@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Box, TextField, Button, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import logo from '../imagenes/Recipelogo.png'; // Importar la imagen
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -13,9 +14,8 @@ const Register = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:4000/register', { username, password });
-      // Verifica que el mensaje de éxito esté en la respuesta
       if (response.data.message === "Usuario registrado exitosamente") {
-        navigate('/login'); // Redirigir a la pantalla de inicio de sesión
+        await handleLogin(username, password); // Llama a handleLogin y espera su respuesta
       }
     } catch (err) {
       setError('Error during registration. Please try again.');
@@ -23,13 +23,49 @@ const Register = () => {
     }
   };
 
+  const handleLogin = async (registeredUser, registeredPassword) => {
+    try {
+      const response = await axios.post('http://localhost:4000/login', { username: registeredUser, password: registeredPassword });
+      if (response.data.message === "Inicio de sesión exitoso") {
+        localStorage.setItem('userId', response.data.userId);
+        navigate('/'); 
+      }
+    } catch (err) {
+      setError('Invalid username or password. Please try again.');
+      console.error(err);
+    }
+  };
+
   return (
-    <Box sx={{ maxWidth: 400, margin: 'auto', padding: 2 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Register
+    <Box 
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '70vh',
+        padding: 3
+      }}
+    >
+      {/* Imagen centrada horizontalmente */}
+      <Box sx={{ mb: 3 }}>
+        <img src={logo} alt="Logo" style={{ maxWidth: '200px', width: '100%' }} />
+      </Box>
+
+      <Typography 
+        variant="h4" 
+        component="h1" 
+        gutterBottom
+        style={{ 
+          color: 'white', 
+          fontWeight: 'bold', 
+          fontFamily: 'Roboto, sans-serif',
+        }}
+      >
+        Registrarse
       </Typography>
       {error && <Typography color="error">{error}</Typography>}
-      <form onSubmit={handleRegister}>
+      <form onSubmit={handleRegister} style={{ width: '100%', maxWidth: 400 }}>
         <TextField
           label="Username"
           variant="outlined"
@@ -49,7 +85,7 @@ const Register = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <Button type="submit" variant="contained" color="primary" fullWidth>
+        <Button type="submit" variant="contained" color="primary" fullWidth sx={{ marginTop: 2 }}>
           Register
         </Button>
       </form>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import BackgroundComponent from './components/Background';
 import PhoneFrameComponent from './components/PhoneFrame';
 import MainScreen from './pantallas/MainScreen';
+import Admin from './pantallas/Admin';
 import Receta from './pantallas/Receta'; // Import your Receta component
 import Register from './pantallas/Register'; // Import your Register component
 import Login from './pantallas/Login'; // Import your Login component
@@ -26,6 +27,7 @@ const AppContent = () => {
         <Route path="/profile" element={<Profile />} /> {/* Profile route */}
         <Route path="/favoritos" element={<Favoritos />} /> {/* Favoritos route */}
         <Route path="/search" element={<RecipeSearch />} /> {/* RecipeSearch pantalla */}
+        <Route path="/admin" element={<Admin />} /> {/* Administracion pantalla */}
       </Routes>
     </PhoneFrameComponent>
   );

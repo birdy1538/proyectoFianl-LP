@@ -86,14 +86,35 @@ app.get('/users/:id', (req, res) => {
 // Endpoint para eliminar un usuario por nombre
 app.delete('/users/:username', (req, res) => {
     const username = req.params.username;
-    db.run('DELETE FROM users WHERE username = ?', [username], function(err) {
+
+    // Buscar el ID del usuario por nombre de usuario
+    db.get('SELECT id FROM users WHERE username = ?', [username], (err, row) => {
         if (err) {
-            return res.status(500).json({ error: 'Error al eliminar el usuario' });
+            return res.status(500).json({ error: 'Error al buscar el usuario' });
         }
-        if (this.changes === 0) {
+        if (!row) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
-        res.json({ message: 'Usuario eliminado exitosamente' });
+
+        const userId = row.id;
+
+        // Eliminar los registros de la tabla de unión 'recetasFavoritas'
+        db.run('DELETE FROM recetasFavoritas WHERE userId = ?', [userId], function(err) {
+            if (err) {
+                return res.status(500).json({ error: 'Error al eliminar recetas favoritas' });
+            }
+
+            // Eliminar al usuario de la tabla 'users'
+            db.run('DELETE FROM users WHERE id = ?', [userId], function(err) {
+                if (err) {
+                    return res.status(500).json({ error: 'Error al eliminar el usuario' });
+                }
+                if (this.changes === 0) {
+                    return res.status(404).json({ message: 'Usuario no encontrado' });
+                }
+                res.json({ message: 'Usuario y sus registros relacionados eliminados exitosamente' });
+            });
+        });
     });
 });
 
