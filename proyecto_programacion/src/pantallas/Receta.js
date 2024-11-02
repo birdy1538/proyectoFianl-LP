@@ -1,18 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, ToggleButton } from '@mui/material';
+import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 
 const Receta = () => {
   const { id } = useParams();
   const [recipe, setRecipe] = useState(null);
   const [error, setError] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  // Simulamos que obtenemos el userId del localStorage (puede ser modificado según tu contexto)
+  const userId = localStorage.getItem('userId');
 
   useEffect(() => {
     const fetchRecipeById = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/recipes/${id}`);
+        let response;
+
+        if (userId) {
+          // Si hay userId, envía el parámetro de consulta
+          response = await axios.get(`http://localhost:4000/recipes/${id}`, {
+            params: { userId }
+          });
+        } else {
+          // Si no hay userId, omite el parámetro de consulta
+          response = await axios.get(`http://localhost:4000/recipes/${id}`);
+        }
+
         setRecipe(response.data);
+        if (userId) {
+          setIsFavorite(response.data.isFavorite); // Asume que la respuesta incluye isFavorite
+        }
       } catch (err) {
         setError('Error fetching recipe');
         console.error(err);
@@ -20,10 +40,23 @@ const Receta = () => {
     };
 
     fetchRecipeById();
-  }, [id]);
+  }, [id, userId]);
+
+  const handleFavoriteToggle = async () => {
+    try {
+      const response = await axios.put('http://localhost:4000/favorites', {
+        userId: userId,
+        recetaId: id
+      });
+      setIsFavorite(!isFavorite);
+      console.log(response.data.message);
+    } catch (error) {
+      console.error('Error al modificar la receta favorita:', error);
+    }
+  };
 
   if (error) {
-    return <Typography variant="h5" >Hubo un error buscando esta receta</Typography> ;
+    return <Typography variant="h5">Hubo un error buscando esta receta</Typography>;
   }
 
   if (!recipe) {
@@ -36,7 +69,7 @@ const Receta = () => {
       return JSON.parse(imagesString.replace(/'/g, '"'));
     } catch (error) {
       console.error('Error parsing images:', error);
-      return null; // Devolver null en caso de error de análisis
+      return null;
     }
   };
 
@@ -46,7 +79,7 @@ const Receta = () => {
       return JSON.parse(instructionsString.replace(/'/g, '"'));
     } catch (error) {
       console.error('Error parsing instructions:', error);
-      return null; // Devolver null en caso de error de análisis
+      return null;
     }
   };
 
@@ -55,66 +88,76 @@ const Receta = () => {
   const instructions = recipe.RecipeInstructions ? getParsedInstructions(recipe.RecipeInstructions) : null;
 
   return (
-    <Box sx={{ height: '85vh', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-      {/* Combined Image and Content Section */}
-      <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
-        {/* Image Section with Gradient */}
+    <Box sx={{ height: '85vh', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', paddingBottom: '100px'}}>
         <Box sx={{ position: 'relative', height: '66.67%' }}>
           <Box
             component="img"
-            src={images ? images[0] : ''} // Usar imágenes o cadena vacía si no hay imágenes
+            src={images ? images[0] : ''}
             alt={recipe.Name}
             sx={{
               width: '100%',
               height: '100%',
               objectFit: 'cover',
               marginBottom: '16px',
-              borderBottomLeftRadius: '16px', // Rounded bottom left corners
-              borderBottomRightRadius: '16px', // Rounded bottom right corners
+              borderBottomLeftRadius: '16px',
+              borderBottomRightRadius: '16px',
             }}
           />
-          {/* Gradient Overlay */}
           <Box
             sx={{
               position: 'absolute',
               bottom: 0,
               left: 0,
               right: 0,
-              height: '25%', // Gradient covers the bottom 25%
+              height: '25%',
               background: 'linear-gradient(to top, #f19f04, transparent)',
-              borderBottomLeftRadius: '16px', // Rounded bottom left corners
-              borderBottomRightRadius: '16px', // Rounded bottom right corners
+              borderBottomLeftRadius: '16px',
+              borderBottomRightRadius: '16px',
             }}
           />
-          {/* Title Positioned at the Center Bottom */}
-          <Typography 
-            variant="h3" // Use h3 for a larger title
-            sx={{ 
-              position: 'absolute', 
-              bottom: '10%', // Adjust as needed to center vertically
-              left: '50%', 
-              transform: 'translateX(-50%)', 
-              color: 'white', 
-              fontWeight: 'bold', 
+          <Typography
+            variant="h3"
+            sx={{
+              position: 'absolute',
+              bottom: '10%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              color: 'white',
+              fontWeight: 'bold',
               fontFamily: 'Roboto, sans-serif',
-              textAlign: 'center', // Center the text
+              textAlign: 'center',
             }}
           >
             {recipe.Name}
           </Typography>
         </Box>
-        
-        {/* Content Section */}
+
         <Box
           sx={{
-            padding: '16px', // Padding for content
+            padding: '16px',
             backgroundColor: '#c48304',
-            borderRadius: '16px', 
+            borderRadius: '16px',
           }}
         >
           <Typography variant="body1" sx={{ marginBottom: '16px', color: '#3d2802', fontWeight: 'normal', fontFamily: 'Roboto, sans-serif' }}>
             {recipe.Description}
           </Typography>
+
+          {/* Botón de toggle para agregar/quitar de favoritos */}
+          {userId && (
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+              <ToggleButton
+                value="check"
+                selected={isFavorite}
+                onChange={handleFavoriteToggle}
+                sx={{ color: isFavorite ? 'black' : 'white' }}
+              >
+                {isFavorite ? <BookmarkAddedIcon /> : <BookmarkIcon />}
+              </ToggleButton>
+            </Box>
+          )}
+
           {instructions && 
           <Typography variant="h6" sx={{ marginBottom: '8px', color: '#3d2802', fontWeight: 'normal', fontFamily: 'Roboto, sans-serif' }}>
             Instructions:

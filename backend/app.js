@@ -110,17 +110,143 @@ app.get('/users', (req, res) => {
 // Endpoint para buscar una receta por ID
 app.get('/recipes/:id', (req, res) => {
     const recipeId = req.params.id;
-    db.get('SELECT * FROM recipes WHERE id = ?', [recipeId], (err, row) => {
+    const userId = req.query.userId; // userId puede ser null o undefined
+
+    let query;
+    let params;
+
+    if (userId) {
+        // Si hay userId, ejecutamos la consulta que incluye la verificación de favorito
+        query = `
+            SELECT 
+                r.*, 
+                CASE 
+                    WHEN rf.recetaId IS NOT NULL THEN 1
+                    ELSE 0
+                END AS isFavorite
+            FROM 
+                recipes r
+            LEFT JOIN 
+                recetasFavoritas rf ON r.id = rf.recetaId AND rf.userId = ?
+            WHERE 
+                r.id = ?
+        `;
+        params = [userId, recipeId];
+    } else {
+        // Si no hay userId, solo consultamos la receta sin verificar favoritos
+        query = `
+            SELECT 
+                r.*
+            FROM 
+                recipes r
+            WHERE 
+                r.id = ?
+        `;
+        params = [recipeId];
+    }
+
+    db.get(query, params, (err, row) => {
         if (err) {
+            console.error('Database error:', err);
             res.status(500).json({ error: 'Error al buscar la receta' });
             return;
         }
         if (!row) {
             res.status(404).json({ message: 'Receta no encontrada' });
         } else {
+            // Si hay userId, convertimos el campo `isFavorite` a booleano
+            if (userId) {
+                row.isFavorite = row.isFavorite === 1;
+            } else {
+                row.isFavorite = false; // No hay forma de determinar si es favorita sin userId
+            }
             res.json(row);
         }
     });
+});
+
+// Consulta para obtener las recetas favoritas del usuario
+app.get('/favorites/:userId', (req, res) => {
+    const userId = req.params.userId;
+    const query = `
+        SELECT 
+            r.id,
+            r.Name,
+            r.Description,
+            r.Images
+        FROM 
+            recetasFavoritas rf
+        INNER JOIN 
+            recipes r ON rf.recetaId = r.id
+        WHERE 
+            rf.userId = ?
+    `;
+
+    db.all(query, [userId], (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: 'Error al buscar las recetas favoritas' });
+            return;
+        }
+        if (rows.length === 0) {
+            res.status(404).json({ message: 'No se encontraron recetas favoritas' });
+        } else {
+            res.json(rows); // Los nombres de los campos se mantienen originales
+        }
+    });
+});
+
+// Endpoint para eliminar una receta favorita
+app.delete('/removeFavorite', (req, res) => {
+    const recetaId = req.body.recetaId; // Se espera que el ID de la receta venga en el cuerpo de la solicitud
+    const userId = req.body.userId; // El ID del usuario viene como un parámetro de consulta
+
+    if (!recetaId || !userId) {
+        return res.status(400).json({ error: 'recetaId y userId son requeridos' });
+    }
+
+    // Ejecutar la consulta para eliminar la receta favorita
+    db.run('DELETE FROM recetasFavoritas WHERE userId = ? AND recetaId = ?', [userId, recetaId], function(err) {
+        if (err) {
+            return res.status(500).json({ error: 'Error al eliminar la receta favorita' });
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ message: 'Receta favorita no encontrada' });
+        }
+        res.json({ message: 'Receta favorita eliminada exitosamente' });
+    });
+});
+
+// Search endpoint
+app.post('/search', async (req, res) => {
+    const { searchTerm } = req.body; // Get the search term from the request body
+
+    if (!searchTerm) {
+        return res.status(400).json({ message: 'Search term is required' });
+    }
+
+    // Construct the SQL query as a string using placeholders
+    const query = `
+        SELECT * FROM recipes 
+        WHERE keywords_clean LIKE ? 
+        LIMIT 20
+    `;
+
+    // Create the parameter for the query
+    const params = [`%${searchTerm}%`];
+
+    try {
+        // Use db.all() to execute the parameterized query
+        db.all(query, params, (err, rows) => {
+            if (err) {
+                console.error('Error fetching recipes:', err.message);
+                return res.status(500).json({ message: 'Internal server error' });
+            }
+            return res.json(rows); // Return the recipes found
+        });
+    } catch (error) {
+        console.error('Error fetching recipes:', error.message);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 // Endpoint para obtener 15 recetas aleatorias
@@ -140,6 +266,40 @@ app.get('/feedRecipes', (req, res) => {
         res.json({
             recipes: rows
         });
+    });
+});
+
+// Endpoint para agregar o quitar recetas favoritas
+app.put('/favorites', (req, res) => {
+    const { userId, recetaId } = req.body;
+
+    if (!userId || !recetaId) {
+        return res.status(400).json({ error: 'userId y recetaId son requeridos' });
+    }
+
+    // Verificar si la receta ya está en las favoritas del usuario
+    db.get('SELECT * FROM RecetasFavoritas WHERE userId = ? AND recetaId = ?', [userId, recetaId], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error al verificar la receta favorita' });
+        }
+
+        if (row) {
+            // Si la receta ya existe, eliminarla (quitar de favoritos)
+            db.run('DELETE FROM RecetasFavoritas WHERE userId = ? AND recetaId = ?', [userId, recetaId], function (err) {
+                if (err) {
+                    return res.status(500).json({ error: 'Error al quitar la receta de favoritos' });
+                }
+                return res.json({ message: 'Receta quitada de favoritos' });
+            });
+        } else {
+            // Si la receta no existe, agregarla (añadir a favoritos)
+            db.run('INSERT INTO RecetasFavoritas (userId, recetaId) VALUES (?, ?)', [userId, recetaId], function (err) {
+                if (err) {
+                    return res.status(500).json({ error: 'Error al agregar la receta a favoritos' });
+                }
+                return res.json({ message: 'Receta agregada a favoritos' });
+            });
+        }
     });
 });
 

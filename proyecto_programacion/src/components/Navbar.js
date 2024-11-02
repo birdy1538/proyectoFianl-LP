@@ -35,13 +35,13 @@ const Navbar = ({ currentPath }) => {
         <HomeIcon fontSize="large" sx={{ color: getColor('/') }} /> 
       </IconButton>
       <IconButton 
-        onClick={() => console.log('List All clicked')} // Placeholder for List All action
+        onClick={() => navigate('/favoritos')} // Placeholder for List All action
         aria-label="List All"
       >
-        <ListAltIcon fontSize="large" sx={{ color: getColor('/list') }} /> 
+        <ListAltIcon fontSize="large" sx={{ color: getColor('/favoritos') }} /> 
       </IconButton>
       <IconButton 
-        onClick={() => console.log('Search clicked')} // Placeholder for Search action
+        onClick={() => navigate('/search')} // Placeholder for Search action
         aria-label="Search"
       >
         <SearchIcon fontSize="large" sx={{ color: getColor('/search') }} /> 
