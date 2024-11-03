@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Typography, ToggleButton } from '@mui/material';
+import { Box, Typography, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
+import CountdownClock from '../components/CountdownClock';
+import Tooltip from '@mui/material/Tooltip';
 
 const Receta = () => {
   const { id } = useParams();
   const [recipe, setRecipe] = useState(null);
   const [error, setError] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [alignment, setAlignment] = useState('instrucciones'); // Default value set to 'instrucciones'
 
-  // Simulamos que obtenemos el userId del localStorage (puede ser modificado según tu contexto)
   const userId = localStorage.getItem('userId');
 
   useEffect(() => {
@@ -20,18 +22,16 @@ const Receta = () => {
         let response;
 
         if (userId) {
-          // Si hay userId, envía el parámetro de consulta
           response = await axios.get(`http://localhost:4000/recipes/${id}`, {
             params: { userId }
           });
         } else {
-          // Si no hay userId, omite el parámetro de consulta
           response = await axios.get(`http://localhost:4000/recipes/${id}`);
         }
 
         setRecipe(response.data);
         if (userId) {
-          setIsFavorite(response.data.isFavorite); // Asume que la respuesta incluye isFavorite
+          setIsFavorite(response.data.isFavorite);
         }
       } catch (err) {
         setError('Error fetching recipe');
@@ -55,6 +55,10 @@ const Receta = () => {
     }
   };
 
+  const handleChange = (event, newAlignment) => {
+    setAlignment(newAlignment);
+  };
+
   if (error) {
     return <Typography variant="h5">Hubo un error buscando esta receta</Typography>;
   }
@@ -63,7 +67,6 @@ const Receta = () => {
     return <div>Loading...</div>;
   }
 
-  // Función para manejar el análisis de imágenes
   const getParsedImages = (imagesString) => {
     try {
       return JSON.parse(imagesString.replace(/'/g, '"'));
@@ -73,7 +76,6 @@ const Receta = () => {
     }
   };
 
-  // Función para manejar el análisis de instrucciones
   const getParsedInstructions = (instructionsString) => {
     try {
       return JSON.parse(instructionsString.replace(/'/g, '"'));
@@ -83,13 +85,13 @@ const Receta = () => {
     }
   };
 
-  // Analizar imágenes e instrucciones
   const images = recipe.Images ? getParsedImages(recipe.Images) : null;
   const instructions = recipe.RecipeInstructions ? getParsedInstructions(recipe.RecipeInstructions) : null;
+  const ingredientes = recipe.RecipeIngredientParts ? getParsedInstructions(recipe.RecipeIngredientParts) : null;
 
   return (
-    <Box sx={{ height: '85vh', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
-      <Box sx={{ flexGrow: 1, overflowY: 'auto', paddingBottom: '100px'}}>
+    <Box sx={{ height: '85vh', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', paddingBottom: '100px' }}>
         <Box sx={{ position: 'relative', height: '66.67%' }}>
           <Box
             component="img"
@@ -144,30 +146,112 @@ const Receta = () => {
             {recipe.Description}
           </Typography>
 
-          {/* Botón de toggle para agregar/quitar de favoritos */}
-          {userId && (
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-              <ToggleButton
-                value="check"
-                selected={isFavorite}
-                onChange={handleFavoriteToggle}
-                sx={{ color: isFavorite ? 'black' : 'white' }}
+          
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <ToggleButtonGroup
+                color="default"
+                value={alignment}
+                exclusive
+                onChange={handleChange}
+                aria-label="Platform"
               >
-                {isFavorite ? <BookmarkAddedIcon /> : <BookmarkIcon />}
-              </ToggleButton>
+                <ToggleButton
+                  value="instrucciones"
+                  sx={{
+                    color: alignment === 'instrucciones' ? '#3d2802' : '#c48304',
+                    backgroundColor: alignment === 'instrucciones' ? '#c48304' : '#3d2802',
+                    '&:hover': {
+                      backgroundColor: '#f19f04',
+                      color: '#3d2802',
+                      borderBottom: '2px solid #3d2802'
+                    },
+                    '&.Mui-selected': {
+                      backgroundColor: '#c48304',
+                      color: '#3d2802',
+                      boxShadow: 'none',
+                      borderBottom: '2px solid #3d2802'
+                    },
+                  }}
+                >
+                  Instrucciones
+                </ToggleButton>
+                <ToggleButton
+                  value="ingredientes"
+                  sx={{
+                    color: alignment === 'ingredientes' ? '#3d2802' : '#c48304',
+                    backgroundColor: alignment === 'ingredientes' ? '#c48304' : '#3d2802',
+                    '&:hover': {
+                      backgroundColor: '#f19f04',
+                      color: '#3d2802',
+                      borderBottom: '2px solid #3d2802'
+                    },
+                    '&.Mui-selected': {
+                      backgroundColor: '#c48304', 
+                      color: '#3d2802', 
+                      boxShadow: 'none', 
+                      borderBottom: '2px solid #3d2802'
+                    },
+                  }}
+                >
+                  Ingredientes
+                </ToggleButton>
+              </ToggleButtonGroup>
+              <Tooltip
+                title={!userId ? "Inicia sesión para guardar" : ""}
+                arrow
+                open={!userId}
+              >
+                <span>
+                  <ToggleButton
+                    value="check"
+                    selected={userId && isFavorite}
+                    disabled={!userId}
+                    onChange={handleFavoriteToggle}
+                    sx={{ color: isFavorite ? 'black' : 'white' }}
+                  >
+                    {isFavorite ? <BookmarkAddedIcon /> : <BookmarkIcon />}
+                  </ToggleButton>
+                </span>
+              </Tooltip>
             </Box>
-          )}
+          
 
-          {instructions && 
-          <Typography variant="h6" sx={{ marginBottom: '8px', color: '#3d2802', fontWeight: 'normal', fontFamily: 'Roboto, sans-serif' }}>
-            Instructions:
-          </Typography>
-          }
-          {instructions && instructions.map((step, index) => (
-            <Typography key={index} variant="body1" component="p" sx={{ marginBottom: '8px', listStyleType: 'disc', marginLeft: '20px', color: '#3d2802', fontWeight: 'normal', fontFamily: 'Roboto, sans-serif' }}>
-              {"- " + step}
-            </Typography>
-          ))}
+          {/* Conditional rendering based on alignment */}
+          {alignment === 'instrucciones' ? (
+            <>
+              {instructions && (
+                <Typography variant="h6" sx={{ marginBottom: '8px', color: '#3d2802', fontWeight: 'bold', fontFamily: 'Roboto, sans-serif' }}>
+                  Instrucciones:
+                </Typography>
+              )}
+              {instructions && instructions.map((step, index) => (
+                <Typography key={index} variant="body1" component="p" sx={{ marginBottom: '8px', listStyleType: 'disc', marginLeft: '20px', color: '#3d2802', fontWeight: 'normal', fontFamily: 'Roboto, sans-serif' }}>
+                  {"- " + step}
+                </Typography>
+              ))}
+              {instructions && (
+                <Typography variant="h6" sx={{ marginBottom: '8px', color: '#3d2802', fontWeight: 'bold', fontFamily: 'Roboto, sans-serif' }}>
+                  Temporizador:
+                </Typography>
+              )}
+              {instructions && recipe.minutes &&
+                <CountdownClock initialMinutes={recipe.minutes} />
+              }
+            </>
+          ) : (
+            <>
+              {ingredientes && (
+                <Typography variant="h6" sx={{ marginBottom: '8px', color: '#3d2802', fontWeight: 'bold', fontFamily: 'Roboto, sans-serif' }}>
+                  Ingredientes:
+                </Typography>
+              )}
+              {ingredientes && ingredientes.map((step, index) => (
+                <Typography key={index} variant="body1" component="p" sx={{ marginBottom: '8px', listStyleType: 'disc', marginLeft: '20px', color: '#3d2802', fontWeight: 'normal', fontFamily: 'Roboto, sans-serif' }}>
+                  {"- " + step}
+                </Typography>
+              ))}
+            </>
+          )}
         </Box>
       </Box>
     </Box>
