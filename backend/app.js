@@ -245,15 +245,16 @@ app.post('/search', async (req, res) => {
         return res.status(400).json({ message: 'Search term is required' });
     }
 
-    // Construct the SQL query as a string using placeholders
+    // Construct the SQL query to search both keywords_clean and name columns
     const query = `
         SELECT * FROM recipes 
         WHERE keywords_clean LIKE ? 
+        OR name LIKE ?
         LIMIT 20
     `;
 
-    // Create the parameter for the query
-    const params = [`%${searchTerm}%`];
+    // Create the parameters for the query
+    const params = [`%${searchTerm}%`, `%${searchTerm}%`];
 
     try {
         // Use db.all() to execute the parameterized query
