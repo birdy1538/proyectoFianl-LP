@@ -7,7 +7,7 @@ const Background = styled(Box)({
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: '100vh',
-  backgroundColor: '#e3e3e3',
+  backgroundColor: '#1f1f1f',
 });
 
 const BackgroundComponent = ({ children }) => {
