@@ -104,10 +104,11 @@ const RecipeSearch = () => {
 				<Box
 					sx={{
 						width: '100%',
-						maxHeight: '40vh', // Set a maximum height for the results container
-						overflowY: 'auto', // Enable vertical scrolling
+						maxHeight: '40vh',
+						overflowY: 'auto',
 						marginTop: '16px',
-						padding: '8px', // Optional padding for aesthetics
+						padding: '8px',
+						scrollbarWidth: 'none',
 					}}
 				>
 					<Grid container spacing={2}>
