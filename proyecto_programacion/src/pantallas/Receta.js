@@ -18,7 +18,7 @@ const Receta = () => {
 	const [error, setError] = useState(null);
 	const [isFavorite, setIsFavorite] = useState(false);
 	const [alignment, setAlignment] = useState('instrucciones'); // Default value set to 'instrucciones'
-
+	const [isHovered, setIsHovered] = useState(false);
 	const userId = localStorage.getItem('userId');
 
 	useEffect(() => {
@@ -245,18 +245,20 @@ const Receta = () => {
 								Ingredientes
 							</ToggleButton>
 						</ToggleButtonGroup>
-
 						<Tooltip
 							title={!userId ? 'Inicia sesión para guardar' : ''}
 							arrow
-							open={!userId}
+							open={isHovered && !userId}
 							sx={{
-								fontSize: '0.75rem', // Adjust the font size
-								padding: '4px', // Adjust the padding
-								maxWidth: '150px', // Set a maximum width for the tooltip
+								fontSize: '0.75rem',
+								padding: '4px',
+								maxWidth: '150px',
 							}}
 						>
-							<span>
+							<span
+								onMouseEnter={() => setIsHovered(true)}
+								onMouseLeave={() => setIsHovered(false)}
+							>
 								<ToggleButton
 									value="check"
 									selected={userId && isFavorite}
