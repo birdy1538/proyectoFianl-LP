@@ -164,7 +164,7 @@ const Favoritos = () => {
 					marginBottom: '16px',
 					padding: '8px 16px',
 					zIndex: 1000,
-					color: 'white',
+					color: '#c48304',
 					fontWeight: 'bold',
 					fontFamily: 'Roboto, sans-serif',
 				}}
