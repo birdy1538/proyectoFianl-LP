@@ -264,7 +264,7 @@ const Receta = () => {
 									selected={userId && isFavorite}
 									disabled={!userId}
 									onChange={handleFavoriteToggle}
-									sx={{ color: isFavorite ? 'black' : 'white', height: '34px' }}
+									sx={{ color: isFavorite ? 'black' : 'grey', height: '34px' }}
 								>
 									{isFavorite ? <BookmarkAddedIcon /> : <BookmarkIcon />}
 								</ToggleButton>
