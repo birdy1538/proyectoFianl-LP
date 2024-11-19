@@ -73,7 +73,7 @@ const Profile = () => {
 					<Typography
 						variant="h6"
 						style={{
-							color: 'white',
+							color: '#c48304',
 							fontWeight: 'bold',
 							fontFamily: 'Roboto, sans-serif',
 						}}
